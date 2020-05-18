@@ -3,7 +3,7 @@ import 'dart:math';
 import 'package:image/image.dart' as img;
 import 'package:path_provider/path_provider.dart';
 
-Future<void> exponencial({int c,int b, File imageFile, String name}) async {
+Future<void> operExponencial({double c,double b, File imageFile, String name}) async {
 
     img.Image ori = img.decodeImage(imageFile.readAsBytesSync());
     int wi = ori.width;

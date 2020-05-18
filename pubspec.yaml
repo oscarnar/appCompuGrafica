@@ -27,6 +27,8 @@ dependencies:
   opencv: ^1.0.2
   image: ^2.1.12
   path_provider: ^1.6.8
+  fl_chart: ^0.9.4
+  syncfusion_flutter_charts: ^18.1.52
 
 
   # The following adds the Cupertino Icons font to your application.
