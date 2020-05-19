@@ -1,16 +1,34 @@
-# grafica
+# App de Computacion Grafica
 
-A new Flutter project.
+Esta app desarrollada con Flutter tiene como finalidad mostrar los algoritmos basicos de
+computación gráfica con una interfaz intuitiva.
 
-## Getting Started
+`NOTA: Hacemos uso del paquete Image y la documentacion dice que no esta disponible para iOS.`
 
-This project is a starting point for a Flutter application.
+## Compilar
 
-A few resources to get you started if this is your first Flutter project:
+Antes de compilar debemos tener instalado [Flutter](https://flutter-es.io/) la version mas reciente.
 
-- [Lab: Write your first Flutter app](https://flutter.dev/docs/get-started/codelab)
-- [Cookbook: Useful Flutter samples](https://flutter.dev/docs/cookbook)
+## Obtener algunos packetes que usamos
 
-For help getting started with Flutter, view our
-[online documentation](https://flutter.dev/docs), which offers tutorials,
-samples, guidance on mobile development, and a full API reference.
+Debemos hacer un `packages get` para actualizar los paquetes. Pero antes debemos comentar algunas lineas en `nuestro pubspec.yaml`.
+
+Comentamos la siguientes lineas
+```bash
+\#flutter_test:
+\#  sdk: flutter
+```
+
+Ahora hacemos un `packages get`, ejecutamos lo siguiente dentro del proyecto:
+```bash
+flutter packages get
+```
+Descomentamos lo anterior y volvemos hacer un `packages get` y listo.
+
+## Compilar
+
+Para compilar solo debemos tener un dispositivo android disponible (No esta habilitado para web)
+y correr la aplicación:
+```bash
+flutter run
+```
