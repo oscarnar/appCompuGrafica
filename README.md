@@ -9,7 +9,7 @@ Antes de compilar debemos tener instalado [Flutter](https://flutter-es.io/) la v
 
 ### Obtener algunos packetes que usamos
 
-Debemos hacer un `packages get` para actualizar los paquetes. Pero antes debemos comentar algunas lineas en `nuestro pubspec.yaml`.
+Debemos hacer un `packages get` para actualizar los paquetes. Pero antes debemos comentar algunas lineas en nuestro `pubspec.yaml`.
 
 Comentamos la siguientes lineas
 ```bash
