@@ -3,8 +3,6 @@
 Esta app desarrollada con Flutter tiene como finalidad mostrar los algoritmos basicos de
 computación gráfica con una interfaz intuitiva.
 
-#`NOTA: Hacemos uso del paquete Image y la documentacion dice que no esta disponible para iOS.`
-
 ## Compilar
 
 Antes de compilar debemos tener instalado [Flutter](https://flutter-es.io/) la version mas reciente.
