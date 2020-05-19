@@ -25,14 +25,15 @@ class ImageCapture extends StatefulWidget {
 
 class _ImageCaptureState extends State<ImageCapture> {
   File _imageFile;
-  List<PointHist> histogram = List(255);
+  List<PointHist> histogram = List(256);
 
   Future<void> _pickImage(ImageSource source) async {
     File selected = await ImagePicker.pickImage(source: source);
-    //updateHistogram();
+    _imageFile = selected;
+    await updateHistogram();
 
     setState(() {
-      _imageFile = selected;
+      
     });
   }
 
@@ -48,24 +49,46 @@ class _ImageCaptureState extends State<ImageCapture> {
       img.Image ori = img.decodeImage(_imageFile.readAsBytesSync());
       int wi = ori.width;
       int he = ori.height;
-      List<int> histoTemp = [];
 
       for (int x = 0; x < wi; x++) {
         for (int y = 0; y < he; y++) {
-          int temp = img.getRed(ori[x * wi + y]);
-          if(histogram[temp] == null){
-            histogram[temp] = PointHist(temp,0);
+          int temp = img.getRed(ori[y * wi + x]);
+
+          if (histogram[temp] == null) {
+            histogram[temp] = PointHist(temp, 0);
           }
           histogram[temp].cant++;
         }
       }
+
       for (int x = 0; x < histogram.length; x++) {
-        if(histogram[x] == null){
-            histogram[x] = PointHist(x,0);
-          }
-        print('${histogram[x].cant}   ${histogram[x].pixel}');
+        if (histogram[x] == null) {
+          histogram[x] = PointHist(x, 0);
+        }
       }
     }
+  }
+
+  dialogHistogram(BuildContext context) {
+    if(histogram[1] ==null){
+      updateHistogram();
+    }
+    return showDialog(
+      context: context,
+      builder: (context) {
+        return AlertDialog(
+          title: Text('Histograma'),
+          content: SingleChildScrollView(
+            padding: EdgeInsets.symmetric(vertical: 0),
+            child: Column(
+              children: [
+                chart(histogram),
+              ],
+            ),
+          ),
+        );
+      },
+    );
   }
 
   @override
@@ -77,7 +100,7 @@ class _ImageCaptureState extends State<ImageCapture> {
           IconButton(
             icon: Icon(Icons.assessment),
             onPressed: () {
-              updateHistogram();
+              dialogHistogram(context);
             },
           ),
         ],
@@ -103,7 +126,11 @@ class _ImageCaptureState extends State<ImageCapture> {
         children: [
           if (_imageFile != null) ...[
             Image.file(_imageFile),
-            //chart(histogram),
+            Container(
+              width: 300,
+              height: 300,
+              child: chart(histogram),
+            )
           ],
         ],
       ),
