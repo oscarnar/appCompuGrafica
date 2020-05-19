@@ -33,12 +33,12 @@ class _ImageCaptureState extends State<ImageCapture> {
     await updateHistogram();
 
     setState(() {
-      
     });
   }
 
   Future<void> updateImage(String name) async {
     final directory = await getApplicationDocumentsDirectory();
+
     setState(() {
       _imageFile = File('${directory.path}/$name.jpg');
     });
@@ -66,11 +66,13 @@ class _ImageCaptureState extends State<ImageCapture> {
           histogram[x] = PointHist(x, 0);
         }
       }
+      setState(() {
+      });
     }
   }
 
   dialogHistogram(BuildContext context) {
-    if(histogram[1] ==null){
+    if (histogram[1] == null) {
       updateHistogram();
     }
     return showDialog(
@@ -78,14 +80,7 @@ class _ImageCaptureState extends State<ImageCapture> {
       builder: (context) {
         return AlertDialog(
           title: Text('Histograma'),
-          content: SingleChildScrollView(
-            padding: EdgeInsets.symmetric(vertical: 0),
-            child: Column(
-              children: [
-                chart(histogram),
-              ],
-            ),
-          ),
+          content: Flexible(child: chart(histogram)),
         );
       },
     );
@@ -95,7 +90,7 @@ class _ImageCaptureState extends State<ImageCapture> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text('Algoritmos de Computacion Grafica'),
+        title: Text('Computacion Grafica'),
         actions: [
           IconButton(
             icon: Icon(Icons.assessment),
@@ -110,9 +105,16 @@ class _ImageCaptureState extends State<ImageCapture> {
           scrollDirection: Axis.horizontal,
           child: Row(
             children: <Widget>[
+              SizedBox(
+                width: MediaQuery.of(context).size.width * 0.03,
+              ),
               IconButton(
                 icon: Icon(Icons.photo),
                 onPressed: () => _pickImage(ImageSource.gallery),
+              ),
+              IconButton(
+                icon: Icon(Icons.camera_alt),
+                onPressed: () => _pickImage(ImageSource.camera),
               ),
               buttonExp(context),
               buttonLog(context),
@@ -126,11 +128,7 @@ class _ImageCaptureState extends State<ImageCapture> {
         children: [
           if (_imageFile != null) ...[
             Image.file(_imageFile),
-            Container(
-              width: 300,
-              height: 300,
-              child: chart(histogram),
-            )
+            chart(histogram),
           ],
         ],
       ),
@@ -222,7 +220,14 @@ class _ImageCaptureState extends State<ImageCapture> {
 Widget chart(List<PointHist> data) {
   return SfCartesianChart(
     primaryXAxis: CategoryAxis(),
-    //title: ChartTitle(Text('prueba')),
+    crosshairBehavior: CrosshairBehavior(
+      enable: true,
+      lineColor: Colors.red,
+      lineDashArray: <double>[5, 5],
+      lineWidth: 2,
+      lineType: CrosshairLineType.vertical,
+    ),
+    title: ChartTitle(text: "Histograma"),
     legend: Legend(isVisible: true),
     series: <ChartSeries>[
       LineSeries<PointHist, int>(
@@ -231,6 +236,13 @@ Widget chart(List<PointHist> data) {
         yValueMapper: (PointHist dat, _) => dat.cant,
       )
     ],
+    trackballBehavior: TrackballBehavior(
+      enable: true,
+      tooltipSettings: InteractiveTooltip(
+        enable: true,
+        color: Colors.red,
+      ),
+    ),
   );
 }
 
