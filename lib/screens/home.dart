@@ -33,11 +33,14 @@ class _ImageCaptureState extends State<ImageCapture> {
     await updateHistogram();
 
     setState(() {
+      _imageFile = selected;
     });
   }
 
   Future<void> updateImage(String name) async {
     final directory = await getApplicationDocumentsDirectory();
+    _imageFile = File('${directory.path}/$name.jpg');
+    await updateHistogram();
 
     setState(() {
       _imageFile = File('${directory.path}/$name.jpg');
@@ -45,6 +48,7 @@ class _ImageCaptureState extends State<ImageCapture> {
   }
 
   updateHistogram() {
+    histogram = List(256);
     if (_imageFile != null) {
       img.Image ori = img.decodeImage(_imageFile.readAsBytesSync());
       int wi = ori.width;
@@ -66,8 +70,7 @@ class _ImageCaptureState extends State<ImageCapture> {
           histogram[x] = PointHist(x, 0);
         }
       }
-      setState(() {
-      });
+      setState(() {});
     }
   }
 
@@ -105,17 +108,6 @@ class _ImageCaptureState extends State<ImageCapture> {
           scrollDirection: Axis.horizontal,
           child: Row(
             children: <Widget>[
-              SizedBox(
-                width: MediaQuery.of(context).size.width * 0.03,
-              ),
-              IconButton(
-                icon: Icon(Icons.photo),
-                onPressed: () => _pickImage(ImageSource.gallery),
-              ),
-              IconButton(
-                icon: Icon(Icons.camera_alt),
-                onPressed: () => _pickImage(ImageSource.camera),
-              ),
               buttonExp(context),
               buttonLog(context),
               buttonRaiz(context),
@@ -123,6 +115,27 @@ class _ImageCaptureState extends State<ImageCapture> {
             ],
           ),
         ),
+      ),
+      floatingActionButton: Column(
+        mainAxisAlignment: MainAxisAlignment.end,
+        children: [
+          FloatingActionButton(
+            mini: true,
+            child: Icon(Icons.camera_alt),
+            onPressed: () {
+              _pickImage(ImageSource.camera);
+            },
+          ),
+          SizedBox(
+            height: 10,
+          ),
+          FloatingActionButton(            
+            child: Icon(Icons.image),
+            onPressed: () {
+              _pickImage(ImageSource.gallery);
+            },
+          ),
+        ],
       ),
       body: ListView(
         children: [
