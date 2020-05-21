@@ -1,10 +1,11 @@
 import 'dart:io';
 
 import 'package:flutter/material.dart';
+import 'package:grafica/algorithms/histogramEqualization.dart';
+import 'package:grafica/dialogs/dialogHistEqua.dart';
 import 'package:grafica/dialogs/dialogThresholding.dart';
 import 'package:fl_chart/fl_chart.dart';
-import 'package:syncfusion_flutter_core/core.dart';
-import 'package:syncfusion_flutter_charts/charts.dart';
+import 'package:grafica/utils/histogramUtil.dart';
 
 import 'package:image_picker/image_picker.dart';
 import 'package:path_provider/path_provider.dart';
@@ -70,7 +71,7 @@ class _ImageCaptureState extends State<ImageCapture> {
           histogram[x] = PointHist(x, 0);
         }
       }
-      setState(() {});
+      //setState(() {});
     }
   }
 
@@ -82,9 +83,17 @@ class _ImageCaptureState extends State<ImageCapture> {
       context: context,
       builder: (context) {
         return AlertDialog(
-          title: Text('Histograma'),
-          content: Flexible(child: chart(histogram)),
-        );
+            title: Text('Histograma'),
+            content: ListView(
+              children: [
+                Container(
+                  width: MediaQuery.of(context).size.width,
+                  height: MediaQuery.of(context).size.height * 0.5,
+                  padding: EdgeInsets.all(20),
+                  child: chart(histogram),
+                ),
+              ],
+            ));
       },
     );
   }
@@ -96,11 +105,10 @@ class _ImageCaptureState extends State<ImageCapture> {
         title: Text('Computacion Grafica'),
         actions: [
           IconButton(
-            icon: Icon(Icons.assessment),
-            onPressed: () {
-              dialogHistogram(context);
-            },
-          ),
+              icon: Icon(Icons.date_range),
+              onPressed: () {
+                dialogHistogram(context);
+              })
         ],
       ),
       bottomNavigationBar: BottomAppBar(
@@ -112,6 +120,7 @@ class _ImageCaptureState extends State<ImageCapture> {
               buttonLog(context),
               buttonRaiz(context),
               buttonThresholding(context),
+              buttonHistEqua(context),
             ],
           ),
         ),
@@ -129,7 +138,7 @@ class _ImageCaptureState extends State<ImageCapture> {
           SizedBox(
             height: 10,
           ),
-          FloatingActionButton(            
+          FloatingActionButton(
             child: Icon(Icons.image),
             onPressed: () {
               _pickImage(ImageSource.gallery);
@@ -140,8 +149,12 @@ class _ImageCaptureState extends State<ImageCapture> {
       body: ListView(
         children: [
           if (_imageFile != null) ...[
+            Container(
+              padding: EdgeInsets.all(5),
+              child: chart(histogram),
+              height: MediaQuery.of(context).size.height * 0.20,
+            ),
             Image.file(_imageFile),
-            chart(histogram),
           ],
         ],
       ),
@@ -160,8 +173,7 @@ class _ImageCaptureState extends State<ImageCapture> {
               c: value[0].toInt(),
               imageFile: _imageFile,
               name: now,
-            );
-            updateImage(now);
+            ).then((value) => updateImage(now));
           },
         );
       },
@@ -228,39 +240,19 @@ class _ImageCaptureState extends State<ImageCapture> {
       },
     );
   }
-}
 
-Widget chart(List<PointHist> data) {
-  return SfCartesianChart(
-    primaryXAxis: CategoryAxis(),
-    crosshairBehavior: CrosshairBehavior(
-      enable: true,
-      lineColor: Colors.red,
-      lineDashArray: <double>[5, 5],
-      lineWidth: 2,
-      lineType: CrosshairLineType.vertical,
-    ),
-    title: ChartTitle(text: "Histograma"),
-    legend: Legend(isVisible: true),
-    series: <ChartSeries>[
-      LineSeries<PointHist, int>(
-        dataSource: data,
-        xValueMapper: (PointHist dat, _) => dat.pixel,
-        yValueMapper: (PointHist dat, _) => dat.cant,
-      )
-    ],
-    trackballBehavior: TrackballBehavior(
-      enable: true,
-      tooltipSettings: InteractiveTooltip(
-        enable: true,
-        color: Colors.red,
-      ),
-    ),
-  );
-}
-
-class PointHist {
-  int cant;
-  int pixel;
-  PointHist(this.pixel, this.cant);
+  MaterialButton buttonHistEqua(BuildContext context) {
+    return MaterialButton(
+      elevation: 5,
+      child: Text('Hist. Equali.'),
+      onPressed: () {
+        String now = DateTime.now().toString();
+        histogramEqualization(
+          histogram: histogram,
+          imageFile: _imageFile,
+          name: now,
+        ).then((value) => updateImage(now));
+      },
+    );
+  }
 }
