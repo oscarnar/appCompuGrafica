@@ -13,8 +13,8 @@ Debemos hacer un `packages get` para actualizar los paquetes. Pero antes debemos
 
 Comentamos la siguientes lineas
 ```bash
-\#flutter_test:
-\#  sdk: flutter
+#flutter_test:
+#  sdk: flutter
 ```
 
 Ahora hacemos un `packages get`, ejecutamos lo siguiente dentro del proyecto:
