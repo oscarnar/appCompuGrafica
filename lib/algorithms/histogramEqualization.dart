@@ -1,28 +1,45 @@
 import 'dart:io';
-import 'dart:math';
+import 'package:flutter/foundation.dart';
+import 'package:grafica/utils/histogramUtil.dart';
 import 'package:image/image.dart' as img;
 import 'package:path_provider/path_provider.dart';
 
-Future<void> histogramEqualization({File imageFile, String name}) async {
+class HistoEqua {
+  img.Image imagen;
+  List<PointHist> histogram;
+  int width;
+  int heigth;
 
-    // TODO: Calcular el histograma
+  HistoEqua(this.imagen, this.histogram, this.width, this.heigth);
+}
 
-    img.Image ori = img.decodeImage(imageFile.readAsBytesSync());
-    int wi = ori.width;
-    int he = ori.height;
-
-    for (int x = 0; x < wi; x++) {
-      for (int y = 0; y < he; y++) {
-        int red = img.getRed(ori[y * wi + x]);
-        /*double newColor = c * (pow(b,red));
-        if (newColor < 0)
-          newColor = 0;
-        if(newColor > 255)
-          newColor = 255;
-        ori.setPixelRgba(x, y, newColor.toInt(), newColor.toInt(), newColor.toInt());*/
-      }
-    }
-
-    final directory = await getApplicationDocumentsDirectory();
-    File('${directory.path}/$name.jpg').writeAsBytesSync(img.encodeJpg(ori));
+Future<img.Image> histogramEquaCompute(HistoEqua data) async {
+  int totalPixel = data.heigth * data.width;
+  List<int> sn = List(256);
+  double suma = 0;
+  for (int i = 0; i < 256; i++) {
+    suma = suma + (data.histogram[i].cant / totalPixel);
+    sn[i] = (255*suma).toInt();
   }
+  print(sn[10]);
+  for (int x = 0; x < data.width; x++) {
+    for (int y = 0; y < data.heigth; y++) {
+      int red = img.getRed(data.imagen[y * data.width + x]);
+      data.imagen.setPixelRgba(x, y, sn[red], sn[red], sn[red]);
+    }
+  }
+  return data.imagen;
+}
+
+Future<void> histogramEqualization(
+    {File imageFile, String name, List<PointHist> histogram}) async {
+  img.Image ori = img.decodeImage(imageFile.readAsBytesSync());
+  int wi = ori.width;
+  int he = ori.height;
+  print("llamo compute");
+
+  ori = await compute(histogramEquaCompute, HistoEqua(ori, histogram, wi, he));
+
+  final directory = await getApplicationDocumentsDirectory();
+  File('${directory.path}/$name.jpg').writeAsBytesSync(img.encodeJpg(ori));
+}
