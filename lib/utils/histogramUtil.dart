@@ -11,8 +11,6 @@ Widget chart(List<PointHist> data) {
       lineWidth: 2,
       lineType: CrosshairLineType.vertical,
     ),
-    //title: ChartTitle(text: "Histograma"),
-    //legend: Legend(isVisible: true),
     series: <ChartSeries>[
       LineSeries<PointHist, int>(
         dataSource: data,
