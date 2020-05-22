@@ -1,23 +1,22 @@
 import 'package:flutter/material.dart';
-import 'package:grafica/forms/formExponecial.dart';
+import 'package:grafica/forms/formConstrast.dart';
 
-Future<List<double>> dialogExp(BuildContext context) {
-  TextEditingController bController = TextEditingController();
+Future<List<double>> dialogContrast(BuildContext context) {
   TextEditingController cController = TextEditingController();
   final formKey = GlobalKey<FormState>();
 
-  FormValidateExp form = FormValidateExp(formKey, cController, bController);
+  FormValidateContrast form = FormValidateContrast(formKey, cController);
   return showDialog(
     context: context,
     builder: (context) {
       return AlertDialog(
-        title: Text('Oper. Exponecial'),
+        title: Text('Contrast Stretching'),
         content: SingleChildScrollView(
           padding: EdgeInsets.symmetric(vertical: 0),
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              Text("g[x,y] = c ∗ (b^(f[x,y]) − 1)"),
+              Text("g[x,y] = (f[x,y] − c)(b − a)/(d − c) + a"),
               form,
             ],
           ),
@@ -30,7 +29,6 @@ Future<List<double>> dialogExp(BuildContext context) {
               if (formKey.currentState.validate()) {
                 List<double> list = [
                   double.parse(cController.text),
-                  double.parse(bController.text),
                 ];
                 Navigator.of(context).pop(list);
               }

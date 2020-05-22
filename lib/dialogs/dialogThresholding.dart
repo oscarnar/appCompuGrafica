@@ -16,7 +16,7 @@ Future<List<double>> dialogThre(BuildContext context) {
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              Text("Insertar formula de Exponencial"),
+              Text("0 si f[x, y] < umbral, caso contrario 1"),
               form,
             ],
           ),

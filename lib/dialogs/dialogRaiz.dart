@@ -16,7 +16,7 @@ Future<List<double>> dialogRaiz(BuildContext context) {
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              Text("Insertar formula de Exponencial"),
+              Text("g[x,y] = c ∗ sqrt(f[x,y])"),
               form,
             ],
           ),

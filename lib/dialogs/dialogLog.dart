@@ -10,13 +10,13 @@ Future<List<double>> dialogLog(BuildContext context) {
     context: context,
     builder: (context) {
       return AlertDialog(
-        title: Text('Oper. Logaritmo'),
+        title: Text('Oper.Logaritmo'),
         content: SingleChildScrollView(
           padding: EdgeInsets.symmetric(vertical: 0),
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              Text("Insertar formula de Exponencial"),
+              Text("g[x,y] = c ∗ log(1 + f[x,y])"),
               form,
             ],
           ),
