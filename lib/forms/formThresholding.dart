@@ -3,18 +3,20 @@ import 'package:flutter/material.dart';
 class FormValidateThre extends StatefulWidget {
   final _formKey;
   final cController;
+  final bController;
 
-  FormValidateThre(this._formKey, this.cController);
+  FormValidateThre(this._formKey, this.cController, this.bController);
   @override
   _FormValidateStateThre createState() =>
-      _FormValidateStateThre(_formKey, cController);
+      _FormValidateStateThre(_formKey, cController, bController);
 }
 
 class _FormValidateStateThre extends State<FormValidateThre> {
   final _formKey;
   final cController;
+  final bController;
 
-  _FormValidateStateThre(this._formKey, this.cController);
+  _FormValidateStateThre(this._formKey, this.cController, this.bController);
   @override
   Widget build(BuildContext context) {
     return Form(
@@ -50,6 +52,23 @@ class _FormValidateStateThre extends State<FormValidateThre> {
                 filled: true,
               ),
             ),
+            TextFormField(
+              controller: bController,
+              keyboardType: TextInputType.number,
+              decoration: InputDecoration(
+                labelText: 'Umbral (Opcional)',
+                hintText: 'Example 120',
+                enabledBorder: OutlineInputBorder(
+                    borderSide: BorderSide(color: Colors.white),
+                    borderRadius: BorderRadius.circular(10)),
+                focusedBorder: OutlineInputBorder(
+                    borderSide: BorderSide(color: Colors.blue[400], width: 2.5),
+                    borderRadius: BorderRadius.circular(10)),
+                prefixIcon: Icon(Icons.assessment),
+                fillColor: Colors.white,
+                filled: true,
+              ),
+            )
           ],
         ),
       ),

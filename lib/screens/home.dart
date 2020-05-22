@@ -230,7 +230,7 @@ class _ImageCaptureState extends State<ImageCapture> {
         dialogThre(context).then(
           (value) {
             thresholding(
-              umbral: value[0].toInt(),
+              umbral: value,
               imageFile: _imageFile,
               name: now,
             ).then((value) => updateImage(now));

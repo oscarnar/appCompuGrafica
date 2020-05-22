@@ -3,9 +3,10 @@ import 'package:grafica/forms/formThresholding.dart';
 
 Future<List<double>> dialogThre(BuildContext context) {
   TextEditingController cController = TextEditingController();
+  TextEditingController bController = TextEditingController();
   final formKey = GlobalKey<FormState>();
 
-  FormValidateThre form = FormValidateThre(formKey, cController);
+  FormValidateThre form = FormValidateThre(formKey, cController, bController);
   return showDialog(
     context: context,
     builder: (context) {
