@@ -1,7 +1,9 @@
 import 'dart:io';
 
 import 'package:flutter/material.dart';
+import 'package:grafica/algorithms/contrastStretching.dart';
 import 'package:grafica/algorithms/histogramEqualization.dart';
+import 'package:grafica/dialogs/dialogContrast.dart';
 import 'package:grafica/dialogs/dialogThresholding.dart';
 import 'package:fl_chart/fl_chart.dart';
 import 'package:grafica/utils/histogramUtil.dart';
@@ -120,6 +122,7 @@ class _ImageCaptureState extends State<ImageCapture> {
               buttonRaiz(context),
               buttonThresholding(context),
               buttonHistEqua(context),
+              buttonConstrast(context),
             ],
           ),
         ),
@@ -192,8 +195,7 @@ class _ImageCaptureState extends State<ImageCapture> {
               b: value[1],
               imageFile: _imageFile,
               name: now,
-            );
-            updateImage(now);
+            ).then((value) => updateImage(now));
           },
         );
       },
@@ -212,8 +214,7 @@ class _ImageCaptureState extends State<ImageCapture> {
               c: value[0].toInt(),
               imageFile: _imageFile,
               name: now,
-            );
-            updateImage(now);
+            ).then((value) => updateImage(now));
           },
         );
       },
@@ -232,8 +233,7 @@ class _ImageCaptureState extends State<ImageCapture> {
               umbral: value[0].toInt(),
               imageFile: _imageFile,
               name: now,
-            );
-            updateImage(now);
+            ).then((value) => updateImage(now));
           },
         );
       },
@@ -251,6 +251,26 @@ class _ImageCaptureState extends State<ImageCapture> {
           imageFile: _imageFile,
           name: now,
         ).then((value) => updateImage(now));
+      },
+    );
+  }
+
+  MaterialButton buttonConstrast(BuildContext context) {
+    return MaterialButton(
+      elevation: 5,
+      child: Text('Constrast Stretching'),
+      onPressed: () {
+        String now = DateTime.now().toString();
+        dialogContrast(context).then(
+          (value) {
+            contrastStretching(
+              porcentaje: value[0],
+              imageFile: _imageFile,
+              name: now,
+              histogram: histogram,
+            ).then((value) => updateImage(now));
+          },
+        );
       },
     );
   }
