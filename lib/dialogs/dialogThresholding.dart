@@ -31,6 +31,9 @@ Future<List<double>> dialogThre(BuildContext context) {
                 List<double> list = [
                   double.parse(cController.text),
                 ];
+                if(bController.text.toString() != ""){
+                  list.add(double.parse(bController.text));
+                }
                 Navigator.of(context).pop(list);
               }
             },
