@@ -1,9 +1,18 @@
 import 'dart:io';
 
+import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
+import 'package:grafica/algorithms/adicion.dart';
+import 'package:grafica/algorithms/blending.dart';
 import 'package:grafica/algorithms/contrastStretching.dart';
+import 'package:grafica/algorithms/division.dart';
 import 'package:grafica/algorithms/histogramEqualization.dart';
+import 'package:grafica/algorithms/logical.dart';
+import 'package:grafica/algorithms/multiplicacion.dart';
+import 'package:grafica/algorithms/resta.dart';
+import 'package:grafica/dialogs/dialogBlending.dart';
 import 'package:grafica/dialogs/dialogContrast.dart';
+import 'package:grafica/dialogs/dialogMulti.dart';
 import 'package:grafica/dialogs/dialogThresholding.dart';
 import 'package:fl_chart/fl_chart.dart';
 import 'package:grafica/utils/histogramUtil.dart';
@@ -39,8 +48,20 @@ class _ImageCaptureState extends State<ImageCapture> {
     });
   }
 
+  Future<File> pickImage(ImageSource source) async {
+    File selected = await ImagePicker.pickImage(source: source);
+    return selected;
+  }
+
+  Future<void> saveImage(String name) async {
+    final directory = await getDownloadsDirectory();
+    _imageFile.copy('${directory.path}/$name.jpg');
+
+  }
+
   Future<void> updateImage(String name) async {
     final directory = await getApplicationDocumentsDirectory();
+    
     _imageFile = File('${directory.path}/$name.jpg');
     await updateHistogram();
 
@@ -108,7 +129,8 @@ class _ImageCaptureState extends State<ImageCapture> {
           IconButton(
               icon: Icon(Icons.date_range),
               onPressed: () {
-                dialogHistogram(context);
+                String now = DateTime.now().toString();
+                saveImage(now);
               })
         ],
       ),
@@ -123,6 +145,12 @@ class _ImageCaptureState extends State<ImageCapture> {
               buttonThresholding(context),
               buttonHistEqua(context),
               buttonConstrast(context),
+              buttonAdicion(context),
+              buttonResta(context),
+              buttonMultiplicacion(context),
+              buttonDivision(context),
+              buttonBlending(context),
+              buttonLogical(context),
             ],
           ),
         ),
@@ -271,6 +299,175 @@ class _ImageCaptureState extends State<ImageCapture> {
             ).then((value) => updateImage(now));
           },
         );
+      },
+    );
+  }
+
+  MaterialButton buttonAdicion(BuildContext context) {
+    return MaterialButton(
+      elevation: 5,
+      child: Text('Adicion'),
+      onPressed: () {
+        String now = DateTime.now().toString();
+        pickImage(ImageSource.gallery).then(
+          (value) {
+            operAdicion(
+              imageFile2: value,
+              imageFile: _imageFile,
+              name: now,
+            ).then((value) => updateImage(now));
+          },
+        );
+      },
+    );
+  }
+
+  MaterialButton buttonResta(BuildContext context) {
+    return MaterialButton(
+      elevation: 5,
+      child: Text('Resta'),
+      onPressed: () {
+        String now = DateTime.now().toString();
+        pickImage(ImageSource.gallery).then(
+          (value) {
+            operResta(
+              imageFile2: value,
+              imageFile: _imageFile,
+              name: now,
+            ).then((value) => updateImage(now));
+          },
+        );
+      },
+    );
+  }
+
+  MaterialButton buttonMultiplicacion(BuildContext context) {
+    return MaterialButton(
+      elevation: 5,
+      child: Text('Multi'),
+      onPressed: () {
+        String now = DateTime.now().toString();
+        dialogMulti(context).then(
+          (value) {
+            operMulti(
+              imageFile: _imageFile,
+              name: now,
+              c: value[0].toInt(),
+            ).then((value) => updateImage(now));
+          },
+        );
+      },
+    );
+  }
+
+  MaterialButton buttonDivision(BuildContext context) {
+    return MaterialButton(
+      elevation: 5,
+      child: Text('División'),
+      onPressed: () {
+        String now = DateTime.now().toString();
+        pickImage(ImageSource.gallery).then(
+          (value) {
+            operDivi(
+              imageFile2: value,
+              imageFile1: _imageFile,
+              name: now,
+            ).then((value) => updateImage(now));
+          },
+        );
+      },
+    );
+  }
+
+  MaterialButton buttonBlending(BuildContext context) {
+    return MaterialButton(
+      elevation: 5,
+      child: Text('Blending'),
+      onPressed: () {
+        String now = DateTime.now().toString();
+        pickImage(ImageSource.gallery).then(
+          (value) {
+            dialogBlending(context).then(
+              (value2) => operBlending(
+                imageFile2: value,
+                imageFile1: _imageFile,
+                x: value2[0],
+                name: now,
+              ).then(
+                (value) => updateImage(now),
+              ),
+            );
+          },
+        );
+      },
+    );
+  }
+
+  MaterialButton buttonLogical(BuildContext context) {
+    return MaterialButton(
+      elevation: 5,
+      child: Text("Lógicos"),
+      onPressed: () {
+        String now = DateTime.now().toString();
+        final act = CupertinoActionSheet(
+          title: Text("Elija el operador lógico"),
+          actions: [
+            CupertinoActionSheetAction(
+              onPressed: () {
+                pickImage(ImageSource.gallery).then(
+                  (value) {
+                    operLogical(
+                      imageFile2: value,
+                      imageFile1: _imageFile,
+                      name: now,
+                      cod: 0,
+                    ).then((value) => updateImage(now));
+                  },
+                );
+                Navigator.pop(context);
+              },
+              child: Text("AND"),
+            ),
+            CupertinoActionSheetAction(
+              onPressed: () {
+                pickImage(ImageSource.gallery).then(
+                  (value) {
+                    operLogical(
+                      imageFile2: value,
+                      imageFile1: _imageFile,
+                      name: now,
+                      cod: 1,
+                    ).then((value) => updateImage(now));
+                  },
+                );
+                Navigator.pop(context);
+              },
+              child: Text("OR"),
+            ),
+            CupertinoActionSheetAction(
+              onPressed: () {
+                pickImage(ImageSource.gallery).then(
+                  (value) {
+                    operLogical(
+                      imageFile2: value,
+                      imageFile1: _imageFile,
+                      name: now,
+                      cod: 2,
+                    ).then((value) => updateImage(now));
+                  },
+                );
+                Navigator.pop(context);
+              },
+              child: Text("XOR"),
+            ),
+          ],
+          cancelButton: CupertinoActionSheetAction(
+              onPressed: () {
+                Navigator.pop(context,'Cancel');
+              },
+              child: Text("Cancelar")),
+        );
+        showCupertinoModalPopup(context: context, builder: (context) => act);
       },
     );
   }
