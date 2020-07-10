@@ -10,11 +10,13 @@ import 'package:grafica/algorithms/histogramEqualization.dart';
 import 'package:grafica/algorithms/logical.dart';
 import 'package:grafica/algorithms/multiplicacion.dart';
 import 'package:grafica/algorithms/resta.dart';
+import 'package:grafica/components/crop_image.dart';
 import 'package:grafica/dialogs/dialogBlending.dart';
 import 'package:grafica/dialogs/dialogContrast.dart';
 import 'package:grafica/dialogs/dialogMulti.dart';
 import 'package:grafica/dialogs/dialogThresholding.dart';
 import 'package:fl_chart/fl_chart.dart';
+import 'package:grafica/screens/scanner.dart';
 import 'package:grafica/utils/histogramUtil.dart';
 
 import 'package:image_picker/image_picker.dart';
@@ -36,6 +38,7 @@ class ImageCapture extends StatefulWidget {
 
 class _ImageCaptureState extends State<ImageCapture> {
   File _imageFile;
+  bool isCropImage = false;
   List<PointHist> histogram = List(256);
 
   Future<void> _pickImage(ImageSource source) async {
@@ -54,14 +57,13 @@ class _ImageCaptureState extends State<ImageCapture> {
   }
 
   Future<void> saveImage(String name) async {
-    final directory = await getDownloadsDirectory();
+    final directory = await getTemporaryDirectory();//getDownloadsDirectory();
     _imageFile.copy('${directory.path}/$name.jpg');
-
   }
 
   Future<void> updateImage(String name) async {
     final directory = await getApplicationDocumentsDirectory();
-    
+
     _imageFile = File('${directory.path}/$name.jpg');
     await updateHistogram();
 
@@ -124,14 +126,23 @@ class _ImageCaptureState extends State<ImageCapture> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text('Computacion Grafica'),
+        title: Text('Computación Grafica'),
         actions: [
           IconButton(
-              icon: Icon(Icons.date_range),
-              onPressed: () {
-                String now = DateTime.now().toString();
-                saveImage(now);
-              })
+            icon: Icon(Icons.save),
+            onPressed: () {
+              String now = DateTime.now().toString();
+              //saveImage(now);
+              Navigator.pushNamed(context, '/Contorn');
+            },
+          ),
+          IconButton(
+            icon: Icon(Icons.assignment),
+            onPressed: () {
+              // Dialog scanner
+              Navigator.pushNamed(context, '/CamScanner');
+            },
+          ),
         ],
       ),
       bottomNavigationBar: BottomAppBar(
@@ -151,6 +162,7 @@ class _ImageCaptureState extends State<ImageCapture> {
               buttonDivision(context),
               buttonBlending(context),
               buttonLogical(context),
+              buttonCrop(context),
             ],
           ),
         ),
@@ -159,6 +171,7 @@ class _ImageCaptureState extends State<ImageCapture> {
         mainAxisAlignment: MainAxisAlignment.end,
         children: [
           FloatingActionButton(
+            heroTag: "floating11",
             mini: true,
             child: Icon(Icons.camera_alt),
             onPressed: () {
@@ -169,6 +182,7 @@ class _ImageCaptureState extends State<ImageCapture> {
             height: 10,
           ),
           FloatingActionButton(
+            heroTag: "floating12",
             child: Icon(Icons.image),
             onPressed: () {
               _pickImage(ImageSource.gallery);
@@ -178,7 +192,10 @@ class _ImageCaptureState extends State<ImageCapture> {
       ),
       body: ListView(
         children: [
-          if (_imageFile != null) ...[
+          if (isCropImage == true && _imageFile != null) ...[
+            //CropImage(),
+          ],
+          if (_imageFile != null && isCropImage == false) ...[
             Container(
               padding: EdgeInsets.all(5),
               child: chart(histogram),
@@ -463,11 +480,25 @@ class _ImageCaptureState extends State<ImageCapture> {
           ],
           cancelButton: CupertinoActionSheetAction(
               onPressed: () {
-                Navigator.pop(context,'Cancel');
+                Navigator.pop(context, 'Cancel');
               },
               child: Text("Cancelar")),
         );
         showCupertinoModalPopup(context: context, builder: (context) => act);
+      },
+    );
+  }
+
+  MaterialButton buttonCrop(BuildContext context) {
+    return MaterialButton(
+      elevation: 5,
+      child: Text('Crop image'),
+      onPressed: () {
+        setState(() {
+          isCropImage = true;
+        });
+        //Navigator.push(
+        //    context, MaterialPageRoute(builder: (context) => MyHomePage()));
       },
     );
   }
