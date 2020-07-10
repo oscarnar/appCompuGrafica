@@ -26,9 +26,14 @@ dependencies:
   image_picker: ^0.6.6+1
   opencv: ^1.0.2
   image: ^2.1.12
-  path_provider: ^1.6.8
+  #path_provider: ^1.6.8
+  path_provider: ^0.5.0+1
   fl_chart: ^0.9.4
   syncfusion_flutter_charts: ^18.1.52
+  #ml_linalg: ^12.17.1
+  #vector_math: ^2.0.8
+  scidart: ^0.0.1-dev.6
+  flutter_image_compress: ^0.7.0
 
 
   # The following adds the Cupertino Icons font to your application.
