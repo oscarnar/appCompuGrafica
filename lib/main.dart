@@ -1,5 +1,7 @@
 
 import 'package:flutter/material.dart';
+import 'package:grafica/components/crop_image.dart';
+import 'package:grafica/routes.dart';
 import 'package:grafica/screens/home.dart';
 
 void main() {
@@ -12,7 +14,9 @@ class MyApp extends StatelessWidget {
     return MaterialApp(
       title: 'Flutter Demo',
       theme: ThemeData.light(),
-      home: ImageCapture(),
+      routes: getRoutes(),
+      //home: ImageCapture(),//MyHomePage(),
+      initialRoute: '/',
     );
   }
 }
