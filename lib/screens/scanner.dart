@@ -1,24 +1,15 @@
 import 'dart:io';
+import 'dart:typed_data';
 
 import 'package:flutter/material.dart';
-import 'package:flutter_image_compress/flutter_image_compress.dart';
 import 'package:grafica/algorithms/affine.dart';
+import 'package:grafica/models/imageModel.dart';
+import 'package:grafica/providers/imageProvider.dart';
 import 'package:grafica/utils/points.dart';
+import 'package:grafica/utils/pointsPaint.dart';
 import 'package:image_picker/image_picker.dart';
-import 'package:opencv/core/core.dart';
 import 'package:path_provider/path_provider.dart';
-import 'package:opencv/opencv.dart';
-
-class Proba extends StatelessWidget {
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      child: Center(
-        child: Text("holis"),
-      ),
-    );
-  }
-}
+import 'package:provider/provider.dart';
 
 class ScannerScreen extends StatefulWidget {
   @override
@@ -27,6 +18,7 @@ class ScannerScreen extends StatefulWidget {
 
 class _ScannerScreenState extends State<ScannerScreen> {
   File _imageFile;
+  Uint8List img;
   String path;
   bool isCropImage = false;
   List<List<double>> matrixPrueba = [
@@ -46,39 +38,36 @@ class _ScannerScreenState extends State<ScannerScreen> {
     color: Colors.red[400],
   );
 
-  Future<File> testCompressAndGetFile(File file, String targetPath) async {
-    var result = await FlutterImageCompress.compressAndGetFile(
-        file.absolute.path, targetPath,
-        quality: 88,
-      );
-
-    print(file.lengthSync());
-    print(result.lengthSync());
-
-    return result;
-  }
-
   Future<void> _pickImage(ImageSource source) async {
     File selected = await ImagePicker.pickImage(source: source);
     final directory = await getApplicationDocumentsDirectory();
     path = '${directory.path}/${DateTime.now().toString()}.jpeg';
-    _imageFile = await testCompressAndGetFile(selected, path);
-    
-    //proba = Image.file(_imageFile);
+    //_imageFile = await testCompressAndGetFile(selected, path);
+    Imagen imgTemp = Imagen(selected);
+    if (selected.lengthSync() > 1500000) {
+      await imgTemp.compressFile();
+    } else {
+      imgTemp.uint8 = selected.readAsBytesSync();
+    }
+    Provider.of<ImagenProvider>(context, listen: false).addImage(imgTemp);
 
     setState(() {
+      this.img =
+          Provider.of<ImagenProvider>(context, listen: false).image.uint8;
       isCropImage = true;
     });
   }
 
-  Future<void> updateImage(String name) async {
+  //TODO: Fix this, add provider
+  Future<void> updateImage(Uint8List imgTemp) async {
     final directory = await getApplicationDocumentsDirectory();
 
-    _imageFile = File('${directory.path}/$name.jpg');
+    //_imageFile = File('${directory.path}/$name.jpg');
+    Provider.of<ImagenProvider>(context, listen: false).image.uint8 = imgTemp;
 
     setState(() {
+      this.img = imgTemp;
       isCropImage = false;
-      _imageFile = File('${directory.path}/$name.jpg');
     });
   }
 
@@ -99,7 +88,9 @@ class _ScannerScreenState extends State<ScannerScreen> {
                 child: Text("CropImage"),
                 onPressed: () {
                   setState(() {
-                    isCropImage = true;
+                    if (img != null) {
+                      isCropImage = true;
+                    }
                   });
                 },
               )
@@ -112,18 +103,27 @@ class _ScannerScreenState extends State<ScannerScreen> {
           //if (_imageFile != null) ...[
           //  Image.file(_imageFile),
           //]
-          if (_imageFile != null && isCropImage == false) ...[
+          if (this.img != null && isCropImage == false) ...[
             Container(
-                height: MediaQuery.of(context).size.height * 0.7,
-                width: MediaQuery.of(context).size.width * 0.9,
-                child: Image.file(
-                  _imageFile,
-                  fit: BoxFit.fitWidth,
-                )),
+              height: MediaQuery.of(context).size.height * 0.7,
+              width: MediaQuery.of(context).size.width * 0.9,
+              child: Image.memory(
+                this.img,
+                fit: BoxFit.fitWidth,
+              ),
+            ),
           ],
-          if (_imageFile != null && isCropImage == true) ...[
+          if (this.img != null && isCropImage == true) ...[
             cropImage(),
           ],
+          if (this.img == null) ...[
+            Center(
+              child: Text(
+                "No hay imagen cargada",
+                style: TextStyle(fontSize: 35),
+              ),
+            )
+          ]
         ],
       ),
     );
@@ -172,7 +172,7 @@ class _ScannerScreenState extends State<ScannerScreen> {
       ],
     );
   }
-  
+
   //Future<dynamic> probaFun() async {
   //  //dynamic img = await _imageFile.readAsBytes();
   //  dynamic border = ImgProc.copyMakeBorder(await _imageFile.readAsBytes(), 20, 20, 20, 20, Core.borderConstant);
@@ -196,47 +196,54 @@ class _ScannerScreenState extends State<ScannerScreen> {
             onPanUpdate: (DragUpdateDetails details) =>
                 onDrag(context, details),
             child: new Stack(
-              //fit: StackFit.expand,
+              //fit: StackFit.loose,
               children: <Widget>[
                 // Hack to expand stack to fill all the space. There must be a better
                 // way to do it.
-                Image.file(
-                  _imageFile,
-                  fit: BoxFit.fitWidth,
-                ),
-                posPoints(fixPos, points[0]),
-                posPoints(fixPos, points[1]),
-                posPoints(fixPos, points[2]),
-                posPoints(fixPos, points[3])
+                if (this.img != null) ...[
+                  Image.memory(
+                    this.img,
+                    fit: BoxFit.fitWidth,
+                  ),
+                  CustomPaint(
+                    painter: PaintPoints(points),
+                  )
+                ]
               ],
             ),
           ),
         ),
-        RaisedButton(
-          child: Text("Recortar Crop Image"),
-          onPressed: () {
-            String now = DateTime.now().toString();
-            operCrop(
-              imageFile: _imageFile,
-              name: now,
-              points: points,
-              withScreen: MediaQuery.of(context).size.width,
-            ).then((value) {
-              updateImage(now);
-              points = [
-                Point(100, 100),
-                Point(200, 100),
-                Point(100, 200),
-                Point(200, 200)
-              ];
-            });
-          },
-        )
       ],
     );
   }
 
+  Widget floatingCrop() {
+    return FloatingActionButton(
+      child: Icon(Icons.crop),
+      onPressed: () {
+        operCrop(
+          image: this.img,
+          points: points,
+          withScreen: MediaQuery.of(context).size.width,
+        ).then(
+          (value) {
+            updateImage(value);
+            points = [
+              Point(100, 100),
+              Point(200, 100),
+              Point(100, 200),
+              Point(200, 200)
+            ];
+          },
+        );
+      },
+    );
+  }
+
   Widget floatingButton() {
+    if (isCropImage) {
+      return floatingCrop();
+    }
     return Column(
       mainAxisAlignment: MainAxisAlignment.end,
       children: [
