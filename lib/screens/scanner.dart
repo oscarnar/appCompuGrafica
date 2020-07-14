@@ -3,13 +3,24 @@ import 'dart:typed_data';
 
 import 'package:flutter/material.dart';
 import 'package:grafica/algorithms/affine.dart';
+import 'package:grafica/components/textRecognition.dart';
 import 'package:grafica/models/imageModel.dart';
 import 'package:grafica/providers/imageProvider.dart';
 import 'package:grafica/utils/points.dart';
 import 'package:grafica/utils/pointsPaint.dart';
+import 'package:image/image.dart' as imgPack;
 import 'package:image_picker/image_picker.dart';
+import 'package:opencv/core/imgproc.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:provider/provider.dart';
+
+//import 'package:edge_detection/edge_detection.dart';
+
+
+//TODO: mejorar la deteccion de bordes
+//      Añadir provider para toda la app
+//      Hacer giros 90` 180`
+//      Poner TextField para copiar el texto generado
 
 class ScannerScreen extends StatefulWidget {
   @override
@@ -21,14 +32,10 @@ class _ScannerScreenState extends State<ScannerScreen> {
   Uint8List img;
   String path;
   bool isCropImage = false;
-  List<List<double>> matrixPrueba = [
-    [2, 0, 0],
-    [0, 2, 0]
-  ];
-  //Image proba;
   double fixPos = 23;
+  bool text = false;
   List<Point> points = [
-    Point(0, 0),
+    Point(100, 100),
     Point(200, 100),
     Point(100, 200),
     Point(200, 200)
@@ -38,20 +45,49 @@ class _ScannerScreenState extends State<ScannerScreen> {
     color: Colors.red[400],
   );
 
+  void updatePoints(dynamic edgePoints) {
+    for (int i = 0; i < points.length; i++) {
+      points[i] = Point(edgePoints[i * 2], edgePoints[(i * 2) + 1]);
+    }
+  }
+
+  void edgePointsUpdate(dynamic edgePoints) {
+    int widthImage = Provider.of<ImagenProvider>(context, listen: false)
+        .image
+        .imageObjet
+        .width;
+    double screen = MediaQuery.of(context).size.width;
+    for (int i = 0; i < points.length; i++) {
+      double screenPointX = (edgePoints[i * 2] * screen) / widthImage;
+      double screenPointY =
+          (screenPointX * edgePoints[(i * 2) + 1]) / edgePoints[i * 2];
+      points[i].px = screenPointX;
+      points[i].py = screenPointY;
+    }
+  }
+
   Future<void> _pickImage(ImageSource source) async {
-    File selected = await ImagePicker.pickImage(source: source);
+    File selected;
+    //if (source == ImageSource.gallery) {
+    selected = await ImagePicker.pickImage(source: source);
     final directory = await getApplicationDocumentsDirectory();
     path = '${directory.path}/${DateTime.now().toString()}.jpeg';
-    //_imageFile = await testCompressAndGetFile(selected, path);
+
     Imagen imgTemp = Imagen(selected);
     if (selected.lengthSync() > 1500000) {
       await imgTemp.compressFile();
     } else {
       imgTemp.uint8 = selected.readAsBytesSync();
+      imgTemp.imageObjet = imgPack.decodeImage(imgTemp.uint8);
     }
+    dynamic edgePoints = await ImgProc.findContours(imgTemp.uint8);
+    print(edgePoints);
+
     Provider.of<ImagenProvider>(context, listen: false).addImage(imgTemp);
+    //edgePointsUpdate(edgePoints);
 
     setState(() {
+      text =false;
       this.img =
           Provider.of<ImagenProvider>(context, listen: false).image.uint8;
       isCropImage = true;
@@ -87,11 +123,25 @@ class _ScannerScreenState extends State<ScannerScreen> {
               MaterialButton(
                 child: Text("CropImage"),
                 onPressed: () {
-                  setState(() {
-                    if (img != null) {
-                      isCropImage = true;
-                    }
-                  });
+                  setState(
+                    () {
+                      if (img != null) {
+                        isCropImage = true;
+                      }
+                    },
+                  );
+                },
+              ),
+              MaterialButton(
+                child: Text("Extract text"),
+                onPressed: () {
+                  setState(
+                    () {
+                      if (img != null) {
+                        text = true;
+                      }
+                    },
+                  );
                 },
               )
             ],
@@ -100,9 +150,6 @@ class _ScannerScreenState extends State<ScannerScreen> {
       ),
       body: ListView(
         children: [
-          //if (_imageFile != null) ...[
-          //  Image.file(_imageFile),
-          //]
           if (this.img != null && isCropImage == false) ...[
             Container(
               height: MediaQuery.of(context).size.height * 0.7,
@@ -123,6 +170,9 @@ class _ScannerScreenState extends State<ScannerScreen> {
                 style: TextStyle(fontSize: 35),
               ),
             )
+          ],
+          if (text == true) ...[
+            TextRecognition(),
           ]
         ],
       ),
