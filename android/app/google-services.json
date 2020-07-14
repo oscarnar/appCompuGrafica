@@ -1,0 +1,83 @@
+{
+  "project_info": {
+    "project_number": "1048158027503",
+    "firebase_url": "https://inventario-126f5.firebaseio.com",
+    "project_id": "inventario-126f5",
+    "storage_bucket": "inventario-126f5.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:1048158027503:android:e17e8d79b4ae246fede51a",
+        "android_client_info": {
+          "package_name": "com.example.grafica"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "1048158027503-ldqs8f3neku6gcq9nsfqarbc8rcc1abg.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyB_Rd8CLhB9xeOI_jvtoTgVhHvA9qi0egw"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "1048158027503-ldqs8f3neku6gcq9nsfqarbc8rcc1abg.apps.googleusercontent.com",
+              "client_type": 3
+            },
+            {
+              "client_id": "1048158027503-gguv6dgiosd1de50tq36aoht5bc50hm7.apps.googleusercontent.com",
+              "client_type": 2,
+              "ios_info": {
+                "bundle_id": "com.raywenderlich.petmedical"
+              }
+            }
+          ]
+        }
+      }
+    },
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:1048158027503:android:e86f862d46c13fdaede51a",
+        "android_client_info": {
+          "package_name": "com.raywenderlich.pet_medical"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "1048158027503-ldqs8f3neku6gcq9nsfqarbc8rcc1abg.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyB_Rd8CLhB9xeOI_jvtoTgVhHvA9qi0egw"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "1048158027503-ldqs8f3neku6gcq9nsfqarbc8rcc1abg.apps.googleusercontent.com",
+              "client_type": 3
+            },
+            {
+              "client_id": "1048158027503-gguv6dgiosd1de50tq36aoht5bc50hm7.apps.googleusercontent.com",
+              "client_type": 2,
+              "ios_info": {
+                "bundle_id": "com.raywenderlich.petmedical"
+              }
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
