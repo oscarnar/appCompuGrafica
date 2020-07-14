@@ -1,9 +1,7 @@
 import 'dart:io';
 import 'dart:typed_data';
 
-import 'package:flutter/cupertino.dart';
 import 'package:flutter/foundation.dart';
-import 'package:grafica/providers/imageProvider.dart';
 import 'package:grafica/utils/points.dart';
 import 'package:image/image.dart' as img;
 import 'package:opencv/core/core.dart';
@@ -58,10 +56,43 @@ Future<img.Image> operAffineComp(Affine data) async {
 // --------- Intento de paralelizar --------//
 class AffinePar {
   img.Image imagen;
-  img.Image output;
-  Array2d A;
+  int wStart, hStart;
+  int wEnd, hEnd;
+  int wNewImage;
+  Array2d invA;
   Array2d B;
-  AffinePar(this.imagen, this.output, this.A, this.B);
+  AffinePar(this.imagen, this.invA, this.B, this.wStart, this.hStart, this.wEnd,
+      this.hEnd, this.wNewImage);
+}
+
+Future<Uint32List> operAffinePar(AffinePar data) async {
+  Uint32List output = Uint32List(data.imagen.data.length ~/ 2);
+
+  int widthImageOri = data.imagen.width;
+  int heigthImageOri = data.imagen.height;
+  int conta = 0;
+  for (int x = data.wStart; x < data.wEnd; x++) {
+    for (int y = data.hStart; y < data.hEnd; y++) {
+      Array tempX = Array([x.toDouble()]);
+      Array tempY = Array([y.toDouble()]);
+      Array2d Y = Array2d([tempX, tempY]) - data.B;
+
+      Array2d temp = matrixDot(data.invA, Y);
+
+      int axisX = temp[0][0].toInt();
+      int axisY = temp[1][0].toInt();
+      if (axisX < widthImageOri &&
+          axisY < heigthImageOri &&
+          axisX >= 0 &&
+          axisY >= 0) {
+        output[conta] = data.imagen[axisY * widthImageOri + axisX];
+        conta++;
+        //output.add(data.imagen[axisY * widthImageOri + axisX]);
+      }
+    }
+  }
+  print("finalice");
+  return output;
 }
 
 // --------- Intento de paralelizar --------//
@@ -135,9 +166,7 @@ double distance(Point a, Point b) {
 }
 
 Future<Uint8List> operCrop(
-    {Uint8List image,
-    List<Point> points,
-    double withScreen}) async {
+    {Uint8List image, List<Point> points, double withScreen}) async {
   print("inicio " + DateTime.now().toString());
   img.Image ori = img.decodeImage(image);
   print("fin " + DateTime.now().toString());
@@ -173,27 +202,53 @@ Future<Uint8List> operCrop(
       operAffineComp, Affine(ori, AM, BM, newWidth.toInt(), newHeigth.toInt()));
   print("affine " + DateTime.now().toString());
 
-  //AffinePar affine = AffinePar(ori, ori.clone(), AM, BM);
-  //await affine.warpAffine();
-  //print("affine " + DateTime.now().toString());
-  //ori = affine.output;
+/*
+  Array2d invA = matrixInverse(AM);
+  Uint32List datos = ori.data;
+  int wStart = newWidth ~/ 2;
+  int hStart = newHeigth ~/ 2;
+  AffinePar first =
+      AffinePar(ori, invA, BM, 0, 0, wStart, hStart, newWidth.toInt());
+  AffinePar second = AffinePar(ori, invA, BM, wStart + 1, hStart + 1, widthImg,
+      heightImg, newWidth.toInt());
+  Uint32List firstPart;
+  Uint32List secondPart;
+
+  operAffinePar(first).then((value) {
+    firstPart = value;
+  });
+  //operAffinePar(second).then((value) => secondPart = value);
+  compute(operAffinePar, first).then((value) {
+    secondPart = value;
+    print(secondPart);
+  });
+  //while(firstPart == null && secondPart == null){
+  //  print("waiting...");
+  //}
+  firstPart = firstPart + secondPart;
+  print("affine " + DateTime.now().toString());
+  ori = img.decodeImage(firstPart);
+  print("affine " + DateTime.now().toString());
+*/
 
   //ori = img.copyCrop(ori, 0, 0, newWidth.toInt(), newHeigth.toInt());
   ori = img.grayscale(ori);
-  ori = img.smooth(ori,15 );
+  ori = img.smooth(ori, 15);
   //ori = img.emboss(ori);
   //ori = img.invert(ori);
   print("crop and gray " + DateTime.now().toString());
-  
+
   final directory = await getApplicationDocumentsDirectory();
   //File('${directory.path}/$name+"prueba".jpg').writeAsBytesSync(img.encodeJpg(ori));
   //File imagen = File('${directory.path}/$name+"prueba".jpg');
 
   //dynamic ima = await ImgProc.adaptiveThreshold(imagen.readAsBytesSync(), 125, ImgProc.adaptiveThreshMeanC, ImgProc.threshBinary, 11, 12);
+  
   dynamic ima = await ImgProc.adaptiveThreshold(img.encodeJpg(ori), 255,
       ImgProc.adaptiveThreshMeanC, ImgProc.threshBinary, 7, 14);
   //ima = await ImgProc.threshold(ima, 120, 255, ImgProc.threshBinary);
   ima = await ImgProc.bilateralFilter(ima, 10, 5, 10, Core.borderConstant);
+  
   print("thre and bilateral " + DateTime.now().toString());
   //ima = await ImgProc.dilate(ima, [1, 1]);
   //ima = await ImgProc.erode(ima, [1, 1]);
