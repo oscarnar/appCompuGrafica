@@ -31,7 +31,7 @@ class Imagen{
       this.path,
       minWidth: 1920,
       minHeight: 1080,
-      quality: 94,
+      quality: 20,
     );
     this.uint8 = result;
     this.imageObjet = img.decodeImage(result);
