@@ -21,7 +21,7 @@ class PaintPoints extends CustomPainter {
       ..strokeCap = StrokeCap.round;
     final paintPoint = Paint()
       ..color = Colors.red
-      ..strokeWidth = 10
+      ..strokeWidth = 20
       ..strokeCap = StrokeCap.round;
     canvas.drawPoints(pointMode, pointsPaint, paintPoint);
     canvas.drawLine(pointsPaint[0], pointsPaint[1], paint);
