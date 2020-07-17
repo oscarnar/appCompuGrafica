@@ -7,9 +7,6 @@ import 'package:image/image.dart' as img;
 import 'package:opencv/core/core.dart';
 import 'package:opencv/opencv.dart';
 import 'package:path_provider/path_provider.dart';
-import 'package:provider/provider.dart';
-//import 'package:ml_linalg/matrix.dart';
-//import 'package:vector_math/vector_math.dart';
 import 'package:scidart/numdart.dart';
 
 class Affine {
@@ -150,7 +147,7 @@ Array2d getB(Array2d M) {
 List<Point> realPoints(List<Point> points, double screen, int widthImage) {
   for (int i = 0; i < points.length; i++) {
     double realPointX = (points[i].px * widthImage) / screen;
-    double realPointY = (realPointX * points[i].py) / points[i].px;
+    double realPointY = (widthImage * points[i].py) / screen;
     points[i].px = realPointX;
     points[i].py = realPointY;
   }
@@ -166,27 +163,33 @@ double distance(Point a, Point b) {
 }
 
 Future<Uint8List> operCrop(
-    {Uint8List image, List<Point> points, double withScreen}) async {
+    {img.Image image, List<Point> points, double withScreen}) async {
   print("inicio " + DateTime.now().toString());
-  img.Image ori = img.decodeImage(image);
-  print("fin " + DateTime.now().toString());
-  final widthImg = ori.width;
-  final heightImg = ori.height;
+  int widthImg = image.width;
+  int heightImg = image.height;
+
+  if(widthImg > 1920 || heightImg > 1080){
+    image = img.copyResize(image,width: 1920);
+    widthImg = image.width;
+    heightImg = image.height;
+    print("new size $widthImg $heightImg");
+  }
+  
   points = realPoints(points, withScreen, widthImg);
   double distWidth = distance(points[0], points[1]);
   double distHeigth = distance(points[0], points[2]);
   double newWidth;
   double newHeigth;
   if (distWidth > distHeigth) {
-    newWidth = ori.width.toDouble() - points[0].px;
+    newWidth = image.width.toDouble() - points[0].px;
     newHeigth = ((distHeigth * newWidth) / distWidth);
-    if (newHeigth > ori.height - points[0].py)
-      newHeigth = ori.height.toDouble() - points[0].py;
+    if (newHeigth > image.height - points[0].py)
+      newHeigth = image.height.toDouble() - points[0].py;
   } else {
-    newHeigth = ori.height.toDouble() - points[0].py;
+    newHeigth = image.height.toDouble() - points[0].py;
     newWidth = ((distWidth * newHeigth) / distHeigth);
-    if (newWidth > ori.width - points[0].px)
-      newWidth = ori.width.toDouble() - points[0].px;
+    if (newWidth > image.width - points[0].px)
+      newWidth = image.width.toDouble() - points[0].px;
   }
 
   Point p2 = Point(newWidth, 0);
@@ -196,20 +199,19 @@ Future<Uint8List> operCrop(
       getAffine([points[0], points[1], points[2]], [Point(0, 0), p2, p3]);
   Array2d AM = getA(M);
   Array2d BM = getB(M);
-  print("getAffine " + DateTime.now().toString());
 
-  ori = await compute(
-      operAffineComp, Affine(ori, AM, BM, newWidth.toInt(), newHeigth.toInt()));
-  print("affine " + DateTime.now().toString());
+  image = await compute(
+      operAffineComp, Affine(image, AM, BM, newWidth.toInt(), newHeigth.toInt()));
 
 /*
   Array2d invA = matrixInverse(AM);
-  Uint32List datos = ori.data;
+  Uint32List datos = image.data;
   int wStart = newWidth ~/ 2;
   int hStart = newHeigth ~/ 2;
+  final heightImg = image.height;
   AffinePar first =
-      AffinePar(ori, invA, BM, 0, 0, wStart, hStart, newWidth.toInt());
-  AffinePar second = AffinePar(ori, invA, BM, wStart + 1, hStart + 1, widthImg,
+      AffinePar(image, invA, BM, 0, 0, wStart, hStart, newWidth.toInt());
+  AffinePar second = AffinePar(image, invA, BM, wStart + 1, hStart + 1, widthImg,
       heightImg, newWidth.toInt());
   Uint32List firstPart;
   Uint32List secondPart;
@@ -218,38 +220,30 @@ Future<Uint8List> operCrop(
     firstPart = value;
   });
   //operAffinePar(second).then((value) => secondPart = value);
-  compute(operAffinePar, first).then((value) {
+  await compute(operAffinePar, first).then((value) {
     secondPart = value;
     print(secondPart);
   });
   //while(firstPart == null && secondPart == null){
-  //  print("waiting...");
+  //  //print("waiting...");
   //}
-  firstPart = firstPart + secondPart;
+
+  List<int> endPart = firstPart.toList() + secondPart.toList();
+  Uint8List end = Uint8List.fromList(endPart);
   print("affine " + DateTime.now().toString());
-  ori = img.decodeImage(firstPart);
+  image = img.decodeImage(end);
   print("affine " + DateTime.now().toString());
 */
 
   //ori = img.copyCrop(ori, 0, 0, newWidth.toInt(), newHeigth.toInt());
-  ori = img.grayscale(ori);
-  ori = img.smooth(ori, 15);
-  //ori = img.emboss(ori);
-  //ori = img.invert(ori);
-  print("crop and gray " + DateTime.now().toString());
-
-  final directory = await getApplicationDocumentsDirectory();
-  //File('${directory.path}/$name+"prueba".jpg').writeAsBytesSync(img.encodeJpg(ori));
-  //File imagen = File('${directory.path}/$name+"prueba".jpg');
-
-  //dynamic ima = await ImgProc.adaptiveThreshold(imagen.readAsBytesSync(), 125, ImgProc.adaptiveThreshMeanC, ImgProc.threshBinary, 11, 12);
-  
-  dynamic ima = await ImgProc.adaptiveThreshold(img.encodeJpg(ori), 255,
-      ImgProc.adaptiveThreshMeanC, ImgProc.threshBinary, 7, 14);
+  image = img.grayscale(image);
+  image = img.smooth(image, 15);
+ 
+  dynamic ima = await ImgProc.adaptiveThreshold(img.encodeJpg(image), 255,
+      ImgProc.adaptiveThreshMeanC, ImgProc.threshBinary, 7, 12);
   //ima = await ImgProc.threshold(ima, 120, 255, ImgProc.threshBinary);
   ima = await ImgProc.bilateralFilter(ima, 10, 5, 10, Core.borderConstant);
   
-  print("thre and bilateral " + DateTime.now().toString());
   //ima = await ImgProc.dilate(ima, [1, 1]);
   //ima = await ImgProc.erode(ima, [1, 1]);
   return ima;
