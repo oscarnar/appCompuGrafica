@@ -55,7 +55,7 @@ class _TextRecognitionState extends State<TextRecognition> {
     pickImage();
     return Center(
       child: text == ''
-          ? Text('Text will display here')
+          ? Text('Text will display here :)')
           : Expanded(
               child: SingleChildScrollView(
                 child: Padding(
