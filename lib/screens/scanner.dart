@@ -1,8 +1,11 @@
 import 'dart:io';
+import 'dart:math';
 import 'dart:typed_data';
 
 import 'package:flutter/material.dart';
 import 'package:grafica/algorithms/affine.dart';
+import 'package:grafica/algorithms/cannyContours.dart';
+import 'package:grafica/components/rotateImage.dart';
 import 'package:grafica/components/textRecognition.dart';
 import 'package:grafica/models/imageModel.dart';
 import 'package:grafica/providers/imageProvider.dart';
@@ -16,10 +19,8 @@ import 'package:provider/provider.dart';
 
 //import 'package:edge_detection/edge_detection.dart';
 
-
 //TODO: mejorar la deteccion de bordes
 //      Añadir provider para toda la app
-//      Hacer giros 90` 180`
 //      Poner TextField para copiar el texto generado
 
 class ScannerScreen extends StatefulWidget {
@@ -34,6 +35,7 @@ class _ScannerScreenState extends State<ScannerScreen> {
   bool isCropImage = false;
   double fixPos = 23;
   bool text = false;
+  int indexPoint;
   List<Point> points = [
     Point(100, 100),
     Point(200, 100),
@@ -57,13 +59,27 @@ class _ScannerScreenState extends State<ScannerScreen> {
         .imageObjet
         .width;
     double screen = MediaQuery.of(context).size.width;
+    List<Point> pointsCopy = new List<Point>.from(points);
+    double minX = double.infinity;
+    int index = 0;
     for (int i = 0; i < points.length; i++) {
       double screenPointX = (edgePoints[i * 2] * screen) / widthImage;
-      double screenPointY =
-          (screenPointX * edgePoints[(i * 2) + 1]) / edgePoints[i * 2];
-      points[i].px = screenPointX;
-      points[i].py = screenPointY;
+      double screenPointY = (screen * edgePoints[(i * 2) + 1]) / widthImage;
+      pointsCopy[i].px = screenPointX;
+      pointsCopy[i].py = screenPointY;
+      double tempMin = pow(screenPointX, 2) + pow(screenPointY, 2);
+      if (tempMin < minX) {
+        minX = tempMin;
+        index = i;
+      }
     }
+    points[0] = pointsCopy[index];
+    points[1] = pointsCopy[(index + 3) % 4];
+    points[2] = pointsCopy[(index + 1) % 4];
+    points[3] = pointsCopy[(index + 2) % 4];
+
+    print(
+        "New points update: ${points[0].px},${points[0].py},${points[1].px},${points[1].py},${points[2].px},${points[2].py},${points[3].px},${points[3].py}");
   }
 
   Future<void> _pickImage(ImageSource source) async {
@@ -74,20 +90,23 @@ class _ScannerScreenState extends State<ScannerScreen> {
     path = '${directory.path}/${DateTime.now().toString()}.jpeg';
 
     Imagen imgTemp = Imagen(selected);
-    if (selected.lengthSync() > 1500000) {
+    print(selected.lengthSync());
+    if (selected.lengthSync() > 1000000) {
       await imgTemp.compressFile();
+      print(imgTemp.uint8.length);
     } else {
       imgTemp.uint8 = selected.readAsBytesSync();
       imgTemp.imageObjet = imgPack.decodeImage(imgTemp.uint8);
     }
-    dynamic edgePoints = await ImgProc.findContours(imgTemp.uint8);
+    Uint8List edge = new Uint8List.fromList(imgTemp.uint8);
+    dynamic edgePoints = await findContours(image: edge, minT: 10, maxT: 50);
     print(edgePoints);
 
     Provider.of<ImagenProvider>(context, listen: false).addImage(imgTemp);
-    //edgePointsUpdate(edgePoints);
+    edgePointsUpdate(edgePoints);
 
     setState(() {
-      text =false;
+      text = false;
       this.img =
           Provider.of<ImagenProvider>(context, listen: false).image.uint8;
       isCropImage = true;
@@ -96,10 +115,14 @@ class _ScannerScreenState extends State<ScannerScreen> {
 
   //TODO: Fix this, add provider
   Future<void> updateImage(Uint8List imgTemp) async {
-    final directory = await getApplicationDocumentsDirectory();
-
-    //_imageFile = File('${directory.path}/$name.jpg');
     Provider.of<ImagenProvider>(context, listen: false).image.uint8 = imgTemp;
+    Provider.of<ImagenProvider>(context, listen: false).image.imageObjet =
+        imgPack.decodeImage(imgTemp);
+    final directory = await getApplicationDocumentsDirectory();
+    String name = "${directory.path}/${DateTime.now().toString()}.jpg";
+    File(name).writeAsBytesSync(imgTemp);
+    Provider.of<ImagenProvider>(context, listen: false).image.imageFile =
+        File(name);
 
     setState(() {
       this.img = imgTemp;
@@ -113,6 +136,21 @@ class _ScannerScreenState extends State<ScannerScreen> {
       appBar: AppBar(
         title: Text("CamScanner UNSA"),
         centerTitle: true,
+        actions: [
+          if (isCropImage == true) ...[
+            MaterialButton(
+              child: Text(
+                "Cancelar",
+                style: TextStyle(color: Colors.white),
+              ),
+              onPressed: () {
+                setState(() {
+                  isCropImage = false;
+                });
+              },
+            )
+          ]
+        ],
       ),
       floatingActionButton: floatingButton(),
       bottomNavigationBar: BottomAppBar(
@@ -140,6 +178,37 @@ class _ScannerScreenState extends State<ScannerScreen> {
                       if (img != null) {
                         text = true;
                       }
+                    },
+                  );
+                },
+              ),
+              MaterialButton(
+                child: Text("Canny"),
+                onPressed: () {
+                  setState(
+                    () {
+                      if (img != null) {
+                        cannyContours(
+                          image: img,
+                          maxT: 50,
+                          minT: 10,
+                        ).then((value) => updateImage(value));
+                      }
+                    },
+                  );
+                },
+              ),
+              MaterialButton(
+                child: Text("FindContours"),
+                onPressed: () {
+                  if (img != null) {
+                    findContours(
+                      image: img,
+                    ).then((value) => edgePointsUpdate(value));
+                  }
+                  setState(
+                    () {
+                      isCropImage = true;
                     },
                   );
                 },
@@ -190,6 +259,7 @@ class _ScannerScreenState extends State<ScannerScreen> {
     setState(() {
       points[bestPoint].px = actual.px;
       points[bestPoint].py = actual.py;
+      indexPoint = bestPoint;
     });
   }
 
@@ -201,6 +271,7 @@ class _ScannerScreenState extends State<ScannerScreen> {
     setState(() {
       points[bestPoint].px = actual.px;
       points[bestPoint].py = actual.py;
+      indexPoint = bestPoint;
     });
   }
 
@@ -212,6 +283,7 @@ class _ScannerScreenState extends State<ScannerScreen> {
     setState(() {
       points[bestPoint].px = actual.px;
       points[bestPoint].py = actual.py;
+      indexPoint = bestPoint;
     });
   }
 
@@ -223,16 +295,7 @@ class _ScannerScreenState extends State<ScannerScreen> {
     );
   }
 
-  //Future<dynamic> probaFun() async {
-  //  //dynamic img = await _imageFile.readAsBytes();
-  //  dynamic border = ImgProc.copyMakeBorder(await _imageFile.readAsBytes(), 20, 20, 20, 20, Core.borderConstant);
-  //  setState(() {
-  //    proba = Image.memory(border);
-  //  });
-  //  return border;
-  //}
   Widget cropImage() {
-    //dynamic border = probaFun();
     return Column(
       mainAxisAlignment: MainAxisAlignment.start,
       children: [
@@ -257,7 +320,12 @@ class _ScannerScreenState extends State<ScannerScreen> {
                   ),
                   CustomPaint(
                     painter: PaintPoints(points),
-                  )
+                  ),
+                  //Draggable(
+                  //  data: indexPoint,
+                  //  child: posPoints(0, points[indexPoint]),
+                  //  feedback: null,
+                  //)
                 ]
               ],
             ),
@@ -268,25 +336,69 @@ class _ScannerScreenState extends State<ScannerScreen> {
   }
 
   Widget floatingCrop() {
-    return FloatingActionButton(
-      child: Icon(Icons.crop),
-      onPressed: () {
-        operCrop(
-          image: this.img,
-          points: points,
-          withScreen: MediaQuery.of(context).size.width,
-        ).then(
-          (value) {
-            updateImage(value);
-            points = [
-              Point(100, 100),
-              Point(200, 100),
-              Point(100, 200),
-              Point(200, 200)
-            ];
+    imgPack.Image imageRot =
+        Provider.of<ImagenProvider>(context, listen: false).image.imageObjet;
+    return Column(
+      mainAxisAlignment: MainAxisAlignment.end,
+      children: [
+        FloatingActionButton(
+          child: Icon(Icons.rotate_right),
+          mini: true,
+          onPressed: () {
+            imageRot = rotate(image: imageRot, angle: 90);
+            updateImage(imgPack.encodeJpg(imageRot));
+            Provider.of<ImagenProvider>(context, listen: false)
+                .image
+                .imageObjet = imageRot;
+            isCropImage = true;
           },
-        );
-      },
+        ),
+        FloatingActionButton(
+          child: Icon(Icons.rotate_left),
+          mini: true,
+          onPressed: () {
+            imageRot = rotate(image: imageRot, angle: -90);
+            updateImage(imgPack.encodeJpg(imageRot));
+            Provider.of<ImagenProvider>(context, listen: false)
+                .image
+                .imageObjet = imageRot;
+            isCropImage = true;
+          },
+        ),
+        FloatingActionButton(
+          child: Icon(Icons.settings_backup_restore),
+          onPressed: () {
+            setState(() {
+              points[0] = Point(100, 100);
+              points[1] = Point(300, 100);
+              points[2] = Point(100, 400);
+              points[3] = Point(300, 400);
+            });
+          },
+        ),
+        FloatingActionButton(
+          child: Icon(Icons.crop),
+          onPressed: () {
+            operCrop(
+              image: Provider.of<ImagenProvider>(context, listen: false)
+                  .image
+                  .imageObjet,
+              points: points,
+              withScreen: MediaQuery.of(context).size.width,
+            ).then(
+              (value) {
+                updateImage(value);
+                points = [
+                  Point(100, 100),
+                  Point(200, 100),
+                  Point(100, 200),
+                  Point(200, 200)
+                ];
+              },
+            );
+          },
+        ),
+      ],
     );
   }
 

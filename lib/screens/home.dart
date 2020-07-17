@@ -16,6 +16,8 @@ import 'package:grafica/dialogs/dialogContrast.dart';
 import 'package:grafica/dialogs/dialogMulti.dart';
 import 'package:grafica/dialogs/dialogThresholding.dart';
 import 'package:fl_chart/fl_chart.dart';
+import 'package:grafica/models/imageModel.dart';
+import 'package:grafica/providers/imageProvider.dart';
 import 'package:grafica/screens/scanner.dart';
 import 'package:grafica/utils/histogramUtil.dart';
 
@@ -30,6 +32,7 @@ import 'package:grafica/algorithms/operRaiz.dart';
 import 'package:grafica/dialogs/dialogRaiz.dart';
 import 'package:grafica/dialogs/dialogExp.dart';
 import 'package:grafica/dialogs/dialogLog.dart';
+import 'package:provider/provider.dart';
 
 class ImageCapture extends StatefulWidget {
   @override
@@ -38,7 +41,6 @@ class ImageCapture extends StatefulWidget {
 
 class _ImageCaptureState extends State<ImageCapture> {
   File _imageFile;
-  bool isCropImage = false;
   List<PointHist> histogram = List(256);
 
   Future<void> _pickImage(ImageSource source) async {
@@ -57,7 +59,7 @@ class _ImageCaptureState extends State<ImageCapture> {
   }
 
   Future<void> saveImage(String name) async {
-    final directory = await getTemporaryDirectory();//getDownloadsDirectory();
+    final directory = await getTemporaryDirectory(); //getDownloadsDirectory();
     _imageFile.copy('${directory.path}/$name.jpg');
   }
 
@@ -140,7 +142,19 @@ class _ImageCaptureState extends State<ImageCapture> {
             icon: Icon(Icons.assignment),
             onPressed: () {
               // Dialog scanner
-              Navigator.pushNamed(context, '/CamScanner');
+              Navigator.pushNamed(context, '/CamScanner').then((value) {
+                setState(() {
+                  if (Provider.of<ImagenProvider>(context, listen: false)
+                          .image !=
+                      null) {
+                    _imageFile =
+                        Provider.of<ImagenProvider>(context, listen: false)
+                            .image
+                            .imageFile;
+                    updateHistogram();
+                  }
+                });
+              });
             },
           ),
         ],
@@ -162,7 +176,6 @@ class _ImageCaptureState extends State<ImageCapture> {
               buttonDivision(context),
               buttonBlending(context),
               buttonLogical(context),
-              buttonCrop(context),
             ],
           ),
         ),
@@ -192,10 +205,7 @@ class _ImageCaptureState extends State<ImageCapture> {
       ),
       body: ListView(
         children: [
-          if (isCropImage == true && _imageFile != null) ...[
-            //CropImage(),
-          ],
-          if (_imageFile != null && isCropImage == false) ...[
+          if (_imageFile != null) ...[
             Container(
               padding: EdgeInsets.all(5),
               child: chart(histogram),
@@ -485,20 +495,6 @@ class _ImageCaptureState extends State<ImageCapture> {
               child: Text("Cancelar")),
         );
         showCupertinoModalPopup(context: context, builder: (context) => act);
-      },
-    );
-  }
-
-  MaterialButton buttonCrop(BuildContext context) {
-    return MaterialButton(
-      elevation: 5,
-      child: Text('Crop image'),
-      onPressed: () {
-        setState(() {
-          isCropImage = true;
-        });
-        //Navigator.push(
-        //    context, MaterialPageRoute(builder: (context) => MyHomePage()));
       },
     );
   }
