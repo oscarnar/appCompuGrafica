@@ -1,7 +1,18 @@
-# App de Computacion Grafica
+# App de Computacion Grafica 👩🏻‍💻📱
+
+[![License](http://img.shields.io/:license-mit-blue.svg)](http://doge.mit-license.org)
 
 Esta app desarrollada con Flutter tiene como finalidad mostrar los algoritmos basicos de
 computación gráfica con una interfaz intuitiva.
+
+## Capturas de pantalla
+
+|     |     |     |
+| :-: | :-: | :-: |
+| Opciones | Imágenes |Diagramas|
+| <img src="https://64.media.tumblr.com/8bfbec47ef8d7f825a7bea495117a953/tumblr_nsq1ux5VlP1rt0dnxo1_500.gif" height="250" /> | <img src="https://64.media.tumblr.com/8bfbec47ef8d7f825a7bea495117a953/tumblr_nsq1ux5VlP1rt0dnxo1_500.gif" height="250" />| <img src="https://64.media.tumblr.com/8bfbec47ef8d7f825a7bea495117a953/tumblr_nsq1ux5VlP1rt0dnxo1_500.gif" height="250" /> |
+
+
 
 ## Compilar en Linux
 
@@ -17,16 +28,21 @@ Comentamos la siguientes lineas
 #  sdk: flutter
 ```
 
-Ahora hacemos un `packages get`, ejecutamos lo siguiente dentro del proyecto:
-```bash
-flutter packages get
-```
-Descomentamos lo anterior y volvemos hacer un `packages get` y listo.
+## Instalación
 
-### Compilar
+Para ejecutar este proyecto por su cuenta, haga lo siguiente:
+1. Clone este proyecto.
+2. Ejecute `flutter pub get`.
+3. Ejecute el proyecto usando `flutter run` o usando las herramientas de su IDE.
 
-Para compilar solo debemos tener un dispositivo android disponible (No esta habilitado para web)
-y correr la aplicación:
-```bash
-flutter run
-```
+Para obtener ayuda para comenzar con Flutter, consulte nuestro
+[documentación en línea] (https://flutter.dev/docs), que ofrece tutoriales,
+ejemplos, orientación sobre desarrollo móvil y una referencia completa de API.
+
+## Contribuyendo
+Las solicitudes de extracción son bienvenidas. Para cambios importantes, abra un problema primero para discutir qué le gustaría cambiar.
+
+Asegúrese de actualizar las pruebas según corresponda.
+
+## Licencia
+[Licencia MIT] (https://choosealicense.com/licenses/mit/)

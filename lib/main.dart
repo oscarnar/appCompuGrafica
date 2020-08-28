@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:grafica/components/crop_image.dart';
+//import 'package:grafica/components/crop_image.dart';
 import 'package:grafica/providers/imageProvider.dart';
 import 'package:grafica/routes.dart';
 import 'package:provider/provider.dart';
