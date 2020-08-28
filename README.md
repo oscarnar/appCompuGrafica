@@ -11,6 +11,8 @@ computación gráfica con una interfaz intuitiva.
 | :-: | :-: | :-: |
 | Opciones | Imágenes |Diagramas|
 | <img src="https://64.media.tumblr.com/8bfbec47ef8d7f825a7bea495117a953/tumblr_nsq1ux5VlP1rt0dnxo1_500.gif" height="250" /> | <img src="https://holatelcel.com/wp-content/uploads/2017/11/celular.gif" height="250" />| <img src="https://64.media.tumblr.com/8bfbec47ef8d7f825a7bea495117a953/tumblr_nsq1ux5VlP1rt0dnxo1_500.gif" height="250" /> |
+| Histograma | Resultado | Opciones|
+| <img src="https://media.tenor.com/images/c491e64365c2c59627154723b322e384/tenor.gif" height="250" /> | <img src="https://64.media.tumblr.com/8bfbec47ef8d7f825a7bea495117a953/tumblr_nsq1ux5VlP1rt0dnxo1_500.gif" height="250" />| <img src="https://media.tenor.com/images/c491e64365c2c59627154723b322e384/tenor.gif" height="250" /> |
 
 
 
@@ -45,4 +47,4 @@ Las solicitudes de extracción son bienvenidas. Para cambios importantes, abra u
 Asegúrese de actualizar las pruebas según corresponda.
 
 ## Licencia
-[Licencia MIT] (https://choosealicense.com/licenses/mit/)
+[License MIT](https://choosealicense.com/licenses/mit/)
