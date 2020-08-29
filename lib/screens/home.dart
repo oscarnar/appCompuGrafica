@@ -10,7 +10,7 @@ import 'package:grafica/algorithms/histogramEqualization.dart';
 import 'package:grafica/algorithms/logical.dart';
 import 'package:grafica/algorithms/multiplicacion.dart';
 import 'package:grafica/algorithms/resta.dart';
-import 'package:grafica/components/crop_image.dart';
+//import 'package:grafica/components/crop_image.dart';
 import 'package:grafica/dialogs/dialogBlending.dart';
 import 'package:grafica/dialogs/dialogContrast.dart';
 import 'package:grafica/dialogs/dialogMulti.dart';
